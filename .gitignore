@@ -1,0 +1,8 @@
+dev.appstore
+blob
+*.pyc
+venv/bin
+venv/include
+venv/lib
+venv/local
+deploy.sh
