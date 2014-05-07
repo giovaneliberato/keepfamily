@@ -13,7 +13,7 @@
                 </div>
             </div>
             <div class="col-md-4 column">
-                {% if not user %}
+                {% if not logged_user %} 
                     <form class="form-horizontal" role="form" action="/home/logar" method="POST">
                        {% if error == 'login_error' %} <p class="error">Login ou senha incorretos</p> {% endif %}
                         <div class="form-group">
@@ -36,7 +36,7 @@
                         <br><br><br>
                     </form>
                 {% else %}
-                    {{ user.name }} <a href="/home/logout">sair</a>
+                    <h3>{{ logged_user.name }}</h3><a href="/home/logout">sair</a>
                 {% endif%}
             </div>
             <div class="col-md-1 column">

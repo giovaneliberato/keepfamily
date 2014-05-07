@@ -7,6 +7,7 @@ from tekton.gae.middleware import Middleware
 def execute(next_process, handler, dependencies, **kwargs):
     def write_tmpl(template_name, values=None):
         values = values or {}
+        values['logged_user'] = dependencies['_logged_user']()
         return handler.response.write(tmpl.render(template_name, values))
 
     dependencies["_write_tmpl"] = write_tmpl
@@ -18,7 +19,9 @@ class TemplateMiddleware(Middleware):
     def set_up(self):
         def write_tmpl(template_name, values=None):
             values = values or {}
+            values['logged_user'] = self.dependencies['_logged_user']()
             return self.handler.response.write(tmpl.render(template_name, values))
 
         self.dependencies["_write_tmpl"] = write_tmpl
         self.dependencies["_render"] = tmpl.render
+

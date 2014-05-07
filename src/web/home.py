@@ -9,8 +9,7 @@ from tekton import router
 AUTH_TOKEN = "AUTH_TOKEN"
 
 def index(_write_tmpl, _logged_user, error=''):
-    u = _logged_user()
-    _write_tmpl('home.html', {'user': u, 'error': error})
+    _write_tmpl('home.html', {'error': error})
 
 
 def cadastrar(_handler, _resp, name, username, email, passwd):
