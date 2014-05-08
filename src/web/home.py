@@ -5,14 +5,24 @@ import time
 import json
 import base64
 from google.appengine.api import memcache
-from models import User
+from models import User, Despesa
 from tekton import router
 
 AUTH_TOKEN = "AUTH_TOKEN"
 
 def index(_handler, _write_tmpl, _logged_user, errors=""):
     if _logged_user():
-        _write_tmpl('index.html', {'page': 'home'})
+        user_id = _logged_user().key.id()
+        despesas_mes = Despesa.buscar_por_usuario(user_id)
+
+        values={
+            'page': 'home',
+            'despesas_mes': despesas_mes 
+
+        }
+
+        _write_tmpl('index.html', values)
+    
     else:
         errors = errors.split()
         _write_tmpl('landing.html', {"errors": errors})
@@ -58,5 +68,14 @@ def logout(_resp, _handler):
     _handler.redirect(router.to_path(index))
 
 
-def despesas(_write_tmpl):
-    _write_tmpl('despesas.html', {'page': 'despesas'})
+def despesas(_write_tmpl, success=''):
+    values = {'page': 'despesas',
+              'success': success}
+    _write_tmpl('despesas.html', values)
+
+
+def cadastrar_despesa(_handler, _logged_user, **kwargs):
+    kwargs['user_id'] = _logged_user().key.id()
+    despesa = Despesa.criar_despesa_fixa(**kwargs)
+    
+    _handler.redirect(router.to_path(despesas) + "?success=true")

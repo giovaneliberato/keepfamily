@@ -2,6 +2,10 @@ body{
     background-color: #F6F6F6;
 }
 
+.despesas-form{
+    padding-left: 16px;
+}
+
 .carousel-caption {
     color: black;
     border-color: white;
@@ -58,4 +62,9 @@ h1>small{
 
 .input-small{
     width: 20%;
+}
+
+.despesas-label {
+    float: right;
+    margin-top: 10px;
 }

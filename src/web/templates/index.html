@@ -5,83 +5,46 @@
 <h3 class="text-center">
     Gastos do mês
 </h3>
+{% if not despesas_mes %}
+    <div class="well"><h4 class="text-center">Você ainda não cadastrou despesas este mês. Vá para a página de <a href="/home/despesas">despesas</a> pra começar.</h4></div>
+{% else %}
 <br>
-<table class="table table-bordered table-hover">
+<table class="table table-bordered table-hover table-striped">
     <thead>
-        <tr>
+        <tr class="success">
             <th>
                 #
             </th>
             <th>
-                Product
+                Produto/Serviço
             </th>
             <th>
-                Payment Taken
+                Beneficiário
             </th>
             <th>
-                Status
+                Valor
             </th>
         </tr>
     </thead>
     <tbody>
-        <tr class="active">
-            <td>
-                1
-            </td>
-            <td>
-                TB - Monthly
-            </td>
-            <td>
-                01/04/2012
-            </td>
-            <td>
-                Approved
-            </td>
-        </tr>
-        <tr class="success">
-            <td>
-                2
-            </td>
-            <td>
-                TB - Monthly
-            </td>
-            <td>
-                02/04/2012
-            </td>
-            <td>
-                Declined
-            </td>
-        </tr>
-        <tr class="warning">
-            <td>
-                3
-            </td>
-            <td>
-                TB - Monthly
-            </td>
-            <td>
-                03/04/2012
-            </td>
-            <td>
-                Pending
-            </td>
-        </tr>
-        <tr class="danger">
-            <td>
-                4
-            </td>
-            <td>
-                TB - Monthly
-            </td>
-            <td>
-                04/04/2012
-            </td>
-            <td>
-                Call in to confirm
-            </td>
-        </tr>
+        {% for d in despesas_mes %}
+            <tr class="active">
+                <td>
+                    {{ loop.index }}
+                </td>
+                <td>
+                    {{ d.nome_produto_servico }}
+                </td>
+                <td>
+                    {{ d.beneficiario }}
+                </td>
+                <td>
+                    {{ d.valor }}
+                </td>
+            </tr>
+        {% endfor %}
     </tbody>
 </table>
-
+{% endif %}
 
 {% endblock %}
