@@ -1,31 +1,50 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-import hashlib
+import time
+import json
 from google.appengine.api import memcache
 from models import User
 from tekton import router
 
 AUTH_TOKEN = "AUTH_TOKEN"
 
-def index(_write_tmpl, _logged_user, error=''):
-    _write_tmpl('home.html', {'error': error})
+def index(_write_tmpl, _logged_user, errors=""):
+    if _logged_user():
+        _write_tmpl('index.html', {'page': 'home'})
+    else:
+        errors = errors.split(" ")
+        _write_tmpl('landing.html', {"errors": errors})
 
 
 def cadastrar(_handler, _resp, name, username, email, passwd):
+    errors = []
     if User.get_by_username(username):
-        _handler.redirect(router.to_path(index, "username_error"))
+        errors.append('username_error')
+
+    if "@" not in email or "." not in email:
+        errors.append('invalid_email')
+
+    if len(passwd) < 6:
+        errors.append('invalid_pw')
+
+    if errors:
+        _handler.redirect(router.to_path(index) + "?errors=" + "+".join(errors))
         return
-        
+
     u = User(name=name, username=username.strip(), email=email, passwd=passwd)
     u.put()
+    
+    #to avoid eventually consistency
+    time.sleep(0.5)
+
     logar(_handler, _resp, username, passwd)
 
 
 def logar(_handler, _resp, username, passwd):
     found = User.get_by_username_and_pw(username.strip(), passwd)
     if not found:
-        _handler.redirect(router.to_path(index, "login_error"))
+        _handler.redirect(router.to_path(index) + "?errors=loggin_error")
     
     else:
         token = "%s%s" % (username, AUTH_TOKEN)
@@ -35,3 +54,7 @@ def logar(_handler, _resp, username, passwd):
 def logout(_resp, _handler):
     _resp.delete_cookie('logged_user')
     _handler.redirect(router.to_path(index))
+
+
+def despesas(_write_tmpl):
+    _write_tmpl('despesas.html', {'page': 'despesas'})

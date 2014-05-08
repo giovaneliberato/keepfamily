@@ -15,3 +15,7 @@ class User(ndb.Model):
     @classmethod
     def get_by_username(cls, username):
         return cls.query(cls.username == username).get()
+
+
+class Vendor(ndb.Model):
+    name = ndb.StringProperty(required=True)
