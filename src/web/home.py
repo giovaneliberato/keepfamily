@@ -3,17 +3,18 @@ from __future__ import absolute_import, unicode_literals
 
 import time
 import json
+import base64
 from google.appengine.api import memcache
 from models import User
 from tekton import router
 
 AUTH_TOKEN = "AUTH_TOKEN"
 
-def index(_write_tmpl, _logged_user, errors=""):
+def index(_handler, _write_tmpl, _logged_user, errors=""):
     if _logged_user():
         _write_tmpl('index.html', {'page': 'home'})
     else:
-        errors = errors.split(" ")
+        errors = errors.split()
         _write_tmpl('landing.html', {"errors": errors})
 
 
@@ -29,7 +30,8 @@ def cadastrar(_handler, _resp, name, username, email, passwd):
         errors.append('invalid_pw')
 
     if errors:
-        _handler.redirect(router.to_path(index) + "?errors=" + "+".join(errors))
+        url = router.to_path(index) + "?errors=" + "+".join(errors)
+        _handler.redirect(url)
         return
 
     u = User(name=name, username=username.strip(), email=email, passwd=passwd)
