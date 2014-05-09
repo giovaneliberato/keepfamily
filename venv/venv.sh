@@ -17,10 +17,9 @@ cd venv
 to_console "Activating virtualenv"
 source bin/activate
 
-
 to_console "Checking up dependencies"
 
-pip install -r requirements.txt --upgrade
+pip install requitements.txt --upgrade
 
 
 cd ../src

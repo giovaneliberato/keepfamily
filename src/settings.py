@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from tmpl_middleware import TemplateMiddleware
-from logged_user_middleware import LoggedUserMiddleare
+from middlewares.tmpl_middleware import TemplateMiddleware
+from middlewares.logged_user_middleware import LoggedUserMiddleare
 from tekton.gae.middleware.email_errors import EmailMiddleware
 from tekton.gae.middleware.json_middleware import JsonMiddleare
 from tekton.gae.middleware.parameter import RequestParamsMiddleware
