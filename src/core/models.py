@@ -7,6 +7,8 @@ from google.appengine.ext.ndb.polymodel import PolyModel
 CATEGORIAS_DEFAULT = [u"Alimentação", u"Animal de estição", u"Casa", u"Educação",
                       u"Filhos", u"Lazer", u"Saúde", u"Veículo", u"Outros"]
 
+STATUS = ['PAGA', 'AGUARDANDO', 'ATRASADA', 'ARQUIVADA']
+
 class User(ndb.Model):
     name = ndb.StringProperty(required=True)
     username = ndb.StringProperty(required=True)
@@ -29,32 +31,38 @@ class Despesa(PolyModel):
     beneficiario = ndb.StringProperty(required=True)
     categoria = ndb.StringProperty(required=True, choices=CATEGORIAS_DEFAULT)
     criacao = ndb.DateTimeProperty(auto_now_add=True)
+    status = ndb.StringProperty(required=True, choices=STATUS, default='AGUARDANDO')
+    data_vencimento = ndb.IntegerProperty(repeated=True)
+    juros = ndb.FloatProperty()
+    valor_corrigido = ndb.FloatProperty()
 
     @classmethod
-    def buscar_por_usuario(cls, user_id):
-        return cls.query(cls.user_id == user_id).order(cls.criacao).fetch(1000)
+    def buscar_por_usuario(cls, user_id, incluir_arquivadas=False):
+        query = cls.query(cls.user_id == user_id)
+        if not incluir_arquivadas:
+            query = query.filter(cls.status != 'ARQUIVADA') 
+        return query.fetch(1000)
+
+
+    def to_dict_json(self):
+        return {
+            'nome_produto_servico': self.nome_produto_servico,
+            'valor': self.valor_corrigido or self.valor,
+            'beneficiario': self.beneficiario,
+            'categoria': self.categoria,
+            'status': self.status if self.status != "ARQUIVADA" else "PAGA" 
+        }
 
 class DespesaFixa(Despesa):
     numero_parcelas = ndb.IntegerProperty(required=True)
-    dia_vencimento = ndb.IntegerProperty(required=True)
-
-    @classmethod
-    def criar(cls, **kwargs):
-        kwargs['valor'] = float(kwargs['valor']) 
-        kwargs['numero_parcelas'] = int(kwargs['numero_parcelas']) 
-        kwargs['dia_vencimento'] = int(kwargs['dia_vencimento']) 
-
-        d = cls(**kwargs)
-        d.put()
-        return d
+    pass
 
 class DespesaRecorrente(Despesa):
-    dia_vencimento = ndb.IntegerProperty(required=True)
+    salvar_modelo = ndb.BooleanProperty(default=False)
 
     @classmethod
-    def criar(cls, **kwargs):
-        kwargs['valor'] = float(kwargs['valor'])
-        kwargs['dia_vencimento'] = int(kwargs['dia_vencimento']) 
-        d = cls(**kwargs)
-        d.put()
-        return d    
+    def buscar_modelos(cls, user_id):
+        return cls.query(cls.salvar_modelo == True, cls.user_id == user_id).fetch()
+
+class DespesaAvulsa(Despesa):
+    pass

@@ -1,48 +1,78 @@
-{% extends "index_base.html" %}   
+{% extends "index_base.html" %}
 
+{% macro status_pagamento(despesa) %}
+  <div class="btn-group">
+
+    {% if despesa.status == 'AGUARDANDO' %}
+      <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">
+        Aguardando pagamento <span class="caret"></span>
+      </button>
+    {% elif despesa.status == 'ATRASADA' %}  
+      <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown">
+        Pagamento atrasado <span class="caret"></span>
+      </button>
+    {% else %}
+      <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+        Pagamento confirmado <span class="caret"></span>
+      </button>
+    {% endif %}
+    <ul class="dropdown-menu" role="menu">
+      {% if despesa.status != 'PAGA' %}
+        <li><a href="/despesas/alterar_status/{{ despesa.key.id() }}/paga"><span class="glyphicon glyphicon-ok"></span> Confirmar pagamento</a></li>
+      {% else %}
+      <li><a href="/despesas/alterar_status/{{ despesa.key.id() }}/arquivada"><span class="glyphicon glyphicon-folder-open"></span> Arquivar</a></li>
+      {% endif %}
+      <li><a href="/despesas/editar/{{ despesa.key.id() }}"><span class="glyphicon glyphicon-pencil"></span> Editar</a></li>
+    </ul>
+  </div>
+{% endmacro %}
 
 {% block content %}
-<h3 class="text-center">
-    Gastos do mês
-</h3>
+<div class="alert alert-info">
+  <h3 class="text-center">
+      Gastos do mês
+  </h3>
+</div>
 {% if not despesas_neste_mes %}
-    <div class="well"><h4 class="text-center">Sem despesas cadastradas neste mês. Vá para a página de <a href="/despesas">despesas</a> pra começar.</h4></div>
+    <div class="well"><h4 class="text-center">Sem despesas cadastradas. Vá para a página de <a href="/despesas">despesas</a> pra começar.</h4></div>
 {% else %}
-<br>
 
 <div class="panel-group" id="accordion">
   <div class="panel panel-default">
+    <section id="fixa"></section>
     <div class="panel-heading">
       <h4 class="panel-title">
-        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+        <a data-toggle="collapse" data-parent="#accordion">
           <p class="text-center">Despesas Fixas</p>
         </a>
       </h4>
     </div>
     <div id="collapseOne" class="panel-collapse collapse in">
       <div class="panel-body">
-        <table class="table table-bordered table-hover table-striped">
+        <table class="table table-bordered table-hover">
             <thead>
                 <tr class="success">
-                    <th>#</th>
+                    <th></th>
                     <th>Produto/Serviço</th>
                     <th>Categoria</th>
                     <th>Beneficiário</th>
                     <th>Valor da parcela</th>
                     <th>Número de parcelas</th>
-                    <th>Dia de vencimento</th>
+                    <th>Data de vencimento</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
                 {% for d in despesas_fixas %}
-                    <tr class="active">
+                    <tr>
                         <td>{{ loop.index }}</td>
                         <td>{{ d.nome_produto_servico }}</td>
                         <td>{{ d.categoria }}</td>
                         <td>{{ d.beneficiario }}</td>
-                        <td>{[{ '{{ d.valor }}' | currency:"R$"}]}</td>
+                        <td>{[{ '{{ d.valor_corrigido or d.valor }}' | currency:"R$"}]}</td>
                         <td>{% if d.numero_parcelas > 0 %}{{ d.numero_parcelas }}{% else %}Pagamento Contínuo {% endif %}</td>
-                        <td>{{ d.dia_vencimento }}</td>
+                        <td>{{ d.data_vencimento[1] }}/{{ d.data_vencimento[0] }}</td>
+                        <td>{{ status_pagamento(d) }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -50,57 +80,91 @@
       </div>
     </div>
   </div>
+  <br>
+  <br>
+  <section id="recorrente"></section>  
   <div class="panel panel-default">
     <div class="panel-heading">
       <h4 class="panel-title">
-        <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+        <a data-toggle="collapse" data-parent="#accordion">
           <p class="text-center">Despesas Recorrentes</p>
         </a>
       </h4>
     </div>
-    <div id="collapseTwo" class="panel-collapse collapse">
+    <div id="collapseTwo" class="panel-collapse collapse in" >
       <div class="panel-body">
-          <table class="table table-bordered table-hover table-striped">
-              <thead>
-                  <tr class="success">
-                      <th>#</th>
-                      <th>Produto/Serviço</th>
-                      <th>Categoria</th>
-                      <th>Beneficiário</th>
-                      <th>Valor</th>
-                      <th>Dia de vencimento</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  {% for d in despesas_recorrentes %}
-                      <tr class="active">
-                          <td>{{ loop.index }}</td>
-                          <td>{{ d.nome_produto_servico }}</td>
-                          <td>{{ d.categoria }}</td>
-                          <td>{{ d.beneficiario }}</td>
-                          <td>{[{ '{{ d.valor }}' | currency:"R$"}]}</td>
-                          <td>{{ d.dia_vencimento }}</td>
-                      </tr>
-                  {% endfor %}
-              </tbody>
-          </table>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr class="success">
+                    <th>#</th>
+                    <th>Produto/Serviço</th>
+                    <th>Categoria</th>
+                    <th>Beneficiário</th>
+                    <th>Valor</th>
+                    <th>Dia de vencimento</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in despesas_recorrentes %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ d.nome_produto_servico }}</td>
+                        <td>{{ d.categoria }}</td>
+                        <td>{{ d.beneficiario }}</td>
+                        <td>{[{ '{{ d.valor_corrigido or d.valor }}' | currency:"R$"}]}</td>
+                        <td>{{ d.data_vencimento[1] }}/{{ d.data_vencimento[0] }}</td>
+                        <td>{{ status_pagamento(d) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
       </div>
     </div>
   </div>
-  <div class="panel panel-default">
+  <br>
+  <br>
+  
+       <div class="panel panel-default">
     <div class="panel-heading">
       <h4 class="panel-title">
-        <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
+        <a data-toggle="collapse" data-parent="#accordion">
           <p class="text-center">Despesas Avulsas</p>
         </a>
       </h4>
     </div>
-    <div id="collapseThree" class="panel-collapse collapse">
+    <section id="avulsa"></section>
+    <div id="collapseOne" class="panel-collapse collapse in">
       <div class="panel-body">
-        Soon :)
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr class="success">
+                    <th></th>
+                    <th>Produto/Serviço</th>
+                    <th>Categoria</th>
+                    <th>Beneficiário</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in despesas_avulsas %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ d.nome_produto_servico }}</td>
+                        <td>{{ d.categoria }}</td>
+                        <td>{{ d.beneficiario }}</td>
+                        <td>{[{ '{{ d.valor }}' | currency:"R$"}]}</td>
+                        <td>{{ status_pagamento(d) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
       </div>
     </div>
+    </div>
   </div>
+<br><br><br>
 </div>
 
 {% endif %}

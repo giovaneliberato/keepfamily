@@ -67,3 +67,28 @@ h1>small{
 .despesas-label {
     float: right;
 }
+
+.panel.panel-default{
+    overflow: visible;
+}
+
+.search-icon{
+    position: absolute;
+    right: 52%;
+    top: 36%;
+}
+
+.separator{
+    padding: 0px 16px;
+}
+
+.legenda{
+    display: block;
+    width: 34%;
+    margin-left: 20px; 
+}
+
+.chart{
+    width: 400px;
+    height: 400px;
+}
