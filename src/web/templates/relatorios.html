@@ -1,0 +1,166 @@
+{% extends "index_base.html" %}   
+
+{% block head %}
+    <script type="text/javascript">
+        var g_despesas = '{{ despesas }}';
+        var g_categorias = '{{ categorias }}';
+        var g_status = '{{ status }}';
+    </script>
+    <script type="text/javascript" src="/static/relatorios_controller.js"></script>
+
+{% endblock %}
+
+
+{% block content %}
+{% if not despesas %}
+    <div class="well"><h4 class="text-center">Sem despesas cadastradas. Vá para a página de <a href="/despesas">despesas</a> pra começar.</h4></div>
+{% else %}
+<div class="container" ng-controller="RelatoriosCrtl">
+    <div class="row clearfix">
+        <div class="col-md-10 column">
+            <nav class="navbar navbar-default" role="navigation">
+                <div class="navbar-header">
+                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"> <span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button> <a class="navbar-brand" href="#">Relatórios de despesa</a>
+                </div>
+                
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <form class="navbar-form navbar-left" role="search">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" placeholder="Busca rápida" ng-model="buscaRapida"/>
+                                </div> 
+                                <span class="glyphicon glyphicon-search search-icon"></span>
+                                <span class="separator">|</span>
+                                <button class="btn btn-default"  data-toggle="modal" data-target="#myModal">Filtrar resultados</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                
+            </nav>
+            <div style="height: 280px; overflow-y: auto;">
+                <table class="table table-condensed table-bordered">
+                    <thead>
+                        <tr class="active">
+                            <th>Produto/Serviço</th>
+                            <th>Categoria</th>
+                            <th>Beneficiário</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="d in despesas | filter: filtrarDespesas | filter: buscaRapida" ng-class="{'success': d.status == 'PAGA' || d.status == 'ARQUIVADA', 'warning': d.status == 'AGUARDANDO', 'danger': d.status == 'ATRASADA'}">
+                            <td>{[{ d.nome_produto_servico }]} </td>
+                            <td>{[{ d.categoria }]}</td>
+                            <td>{[{ d.beneficiario }]}</td>
+                            <td>{[{ d.valor | currency:"R$" }]}</td>
+                            <td>{[{ d.status.charAt(0) + d.status.slice(1).toLowerCase() }]}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <br><br><br>
+            <div class="row clearfix">
+                <div class="col-md-6 column" ng-init="mostrar = 3">
+                    <h3 class="text-center">
+                        Maiores gastos <small>(mostrando {[{ mostrar }]} de {[{ despesas.length }]})</small>
+                        <input style="width: 52px; display: inline;" type="number" class="form-control" ng-model="mostrar" min="1" max="{[{ despesas.length }]}">
+                    </h3>
+                    <table class="table table-condensed table-bordered">
+                    <thead>
+                        <tr class="success">
+                            <th>Produto/Serviço</th>
+                            <th>Categoria</th>
+                            <th>Beneficiário</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="d in despesas | orderBy: 'valor': true | limitTo: mostrar">
+                            <td>{[{ d.nome_produto_servico }]}</td>
+                            <td>{[{ d.categoria }]}</td>
+                            <td>{[{ d.beneficiario }]}</td>
+                            <td>{[{ d.valor | currency:"R$" }]}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br>
+                <div class="well" >
+                    <h3 class="text-center">
+                        Status das contas
+                    </h3>
+                    <div class="progress">
+                      <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{[{ pagas_cont }]}" aria-valuemin="0" aria-valuemax="100" style="width: {[{ pagas_cont }]}%;">
+                        {[{ Math.floor(pagas_cont) }]}%
+                      </div>
+                      <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{[{ aguardando_cont }]}" aria-valuemin="100" aria-valuemax="100" style="width: {[{ aguardando_cont }]}%;">
+                        {[{ Math.floor(aguardando_cont) }]}%
+                      </div>
+                      <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="{[{ atrasadas_cont }]}" aria-valuemin="0" aria-valuemax="100" style="width: {[{ atrasadas_cont }]}%;">
+                        {[{ Math.floor(atrasadas_cont) }]}%
+                      </div>
+                    </div>
+                    <div class="pull-rigth">
+                        <p>Legenda:</p>
+                        <span class="label label-success legenda">Pagamento confirmado</span>
+                        <span class="label label-warning legenda">Aguardando pagamento</span>
+                        <span class="label label-danger legenda">Pagamento atrasado</span>
+                    </div>
+                </div>
+                </div>
+                <div class="col-md-1 column">
+                </div>
+                <div class="col-md-5 column">
+                    <div ac-chart="'pie'" ac-data="data" ac-config="config" id='chart' class='chart'></div>
+                    <br><br>
+                    <div class="jumbotron well">
+                        <h2>
+                            Total: {[{ calcularTotal() | currency:"R$" }]}
+                        </h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">Filtrar resultados</h4>
+              </div>
+              <div class="modal-body">
+                <strong>Categoria:</strong><br> 
+                    <label class="checkbox-inline" ng-repeat="c in categorias">
+                      <input type="checkbox" ng-model="c.selected">{[{ c.label }]} 
+                    </label>
+                <br><br>
+                <strong>Status:</strong><br>
+                <label class="checkbox-inline" ng-repeat="s in status track by $index">
+                  <input type="checkbox" ng-model="s.selected"> {[{ s.label }]}
+                </label>
+                <br><br>
+                <strong>Valor:</strong><br>
+                <div class="input-group input-group-sm">
+                    <small>Menor que: </small>
+                    <input type="number" step="any" required min="0" class="form-control small-input" ng-model="menor_que"/>
+                </div>
+                <div class="input-group input-group-sm">
+                    <small>Maior que: </small>
+                    <input type="number" step="any" required min="0" class="form-control small-input" ng-model="maior_que"/>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Filtrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+<br><br>
+
+{% endblock %}

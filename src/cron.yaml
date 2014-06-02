@@ -1,0 +1,4 @@
+cron:
+- description: calcular juros
+  url: /web/tasks/calcular_juros
+  schedule: every day 00:00

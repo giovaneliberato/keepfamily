@@ -1,0 +1,102 @@
+{% extends "base.html" %}   
+{% block body%}
+<br><br>
+<div class="col-md-2 column"></div>
+<div class="col-md-4 column">
+    <div class="carousel slide" id="carousel-790270">
+        <ol class="carousel-indicators">
+            <li data-slide-to="0" data-target="#carousel-790270">
+            </li>
+            <li data-slide-to="1" data-target="#carousel-790270" class="active">
+            </li>
+            <li data-slide-to="2" data-target="#carousel-790270">
+            </li>
+        </ol>
+        <div class="carousel-inner">
+            <div class="item">
+                <img alt="" src="/static/img/home1.jpg">
+                <div class="carousel-caption">
+                    <h4>
+                        Esqueça o papel!
+                    </h4>
+                    <p>
+                        Todos os seus gastos online, sem papel e sem bagunça.
+                    </p>
+                </div>
+            </div>
+            <div class="item active">
+                <img alt="" src="/static/img/home2.jpg">
+                <div class="carousel-caption">
+                    <h4>
+                        Controle suas despesas
+                    </h4>
+                    <p>
+                        Com o KeepFamily você controla todas as suas despesas e consegue poupar.    
+                    </p>
+                </div>
+            </div>
+            <div class="item shade">
+                <img alt="" src="/static/img/home3.jpg">
+                <div class="carousel-caption">
+                    <h4>
+                        Graficos de controle
+                    </h4>
+                    <p>
+                        Ótimas ferramenta para a visualização das suas despesas
+                    </p>
+                </div>
+            </div>
+        </div> <a class="left carousel-control" href="#carousel-790270" data-slide="prev"><span class="glyphicon glyphicon-chevron-left"></span></a> <a class="right carousel-control" href="#carousel-790270" data-slide="next"><span class="glyphicon glyphicon-chevron-right"></span></a>
+    </div>
+    <h2>
+        Gerencie suas despesas
+    </h2>
+    <p>
+        O KeepFamily é um sistema de despesas de gestão doméstica. Com ele você pode controlar quanto de dinheiro entra e todas as suas contas com água, luz, telefone, cartão de crédito, e até despesas cotidianas como gasolina ou o lanche das crianças.
+    </p>
+</div>
+<div class="col-md-2 column">
+</div>
+<div class="col-md-4 column">
+    <h1><strong>Cadastre-se!</strong></h1>
+    <form role="form" class="form-inline" action="/usuario/cadastrar" method="POST">
+        <div class="form-group">
+             <label for="name">Nome</label>
+             <input type="text" required class="form-control" name="name">
+        </div>
+        <br><br>
+        <div class="form-group">
+            <label for="username">Login</label>
+            {% if 'username_error' in errors %}
+                <p>
+                <span class="label label-danger">Este Login digitado ja esta sendo utilizado por outro usuario</span>
+                </p>
+            {% endif %}
+            <input type="text" required class="form-control" name="username">
+        </div>
+        <br><br>
+        <div class="form-group">
+             <label for="email">Email</label>
+                {% if 'invalid_email' in errors %}
+                <p><span class="label label-danger">Email inválido</span></p>
+             {% endif %}
+             <input type="email" required class="form-control" name="email">
+        </div>
+        <br><br>
+        <div class="form-group">
+             <label for="passwd">Password</label>
+             {% if 'invalid_pw' in errors %}
+                <p>
+                 <span class="label label-danger">Senha inválida, digite uma senha de no mínimo 6 caracteres</span></p>
+             {% else %}
+                <br>
+             {% endif %}
+             <input style="width:219px;" type="password" required class="form-control" name="passwd" placeholder="mínimo 6 caracteres">
+        </div>
+        <br><br>
+        <button type="submit" class="btn btn-primary btn-block" style="width:219px;">Cadastrar</button>
+    </form>
+</div>
+
+<br><br>   
+{% endblock %}

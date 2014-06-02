@@ -1,0 +1,26 @@
+{% extends "base.html" %}   
+
+
+{% block body %}
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-2 column">
+            <ul class="nav nav-pills nav-stacked">
+                <li class="{{'active' if page == 'home'}}">
+                    <a href="/"><span class="glyphicon glyphicon-home"></span> Início</a>
+                </li>
+                <li  class="{{'active' if page == 'despesas'}}">
+                    <a href="/despesas"><span class="glyphicon glyphicon-usd"></span> Despesas</a>
+                </li>
+                <li  class="{{'active' if page == 'relatorios'}}">
+                    <a href="/relatorios"><span class="glyphicon glyphicon-stats"></span> Relatorios</a>
+                </li>
+            </ul>
+            </div>
+            <div class="col-md-10 column">{% block content %}{% endblock %}</div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

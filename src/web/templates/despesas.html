@@ -1,0 +1,123 @@
+{% extends "index_base.html" %}   
+
+{% block head %}
+    <script type="text/javascript" src="/static/despesas_controller.js"></script>
+{% endblock %}
+
+{% set d = despesa or {} %}
+
+{% block content %}
+<div ng-controller="DespesasCtrl">
+    <ul class="nav nav-tabs">
+        <li class="{{'active' if aba == 'fixa' }}">
+            <a href="/despesas/fixa">Despesas Fixas</a>
+        </li>
+        <li class="{{'active' if aba == 'recorrente' }}">
+            <a href="/despesas/recorrente">Despesas Recorrentes</a>
+        </li>
+        <li class="{{'active' if aba == 'avulsa' }}">
+            <a href="/despesas/avulsa">Despesas Avulsas</a>
+        </li>
+    </ul>
+    <br>
+    {% if success %}
+        <div class="alert alert-success">
+            <strong>Cadastrado com sucesso</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        </div>
+    {% endif %}
+    {% if aba == 'recorrente' and modelos %}
+        <div class="alert alert-info" style="width: 50%" ng-hide="closePopup">
+            <div class="btn-group">
+                <button type="button" class="close" data-dismiss="alert" ng-click="closePopup = true" aria-hidden="true">&times;</button>
+                Ei, você pode recuperar modelos de contas que você ja cadastrou!
+                <br><br>
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    Recuperar modelos <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    {% for m in modelos %}
+                        <li><a href="/despesas/usar_modelo/{{ m.key.id() }}">{{ m.nome_produto_servico }} ({{ m.beneficiario }})</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+    <div>
+        <form class="form-horizontal despesas-form" role="form" action="{{ action_url }}" method="POST">
+            {% if aba == 'fixa' %}
+                <input type="hidden" name="tipo" value="FIXA">       
+            {% elif aba == 'recorrente' %}
+                <input type="hidden" name="tipo" value="RECORRENTE">
+            {% else %}
+                <input type="hidden" name="tipo" value="AVULSA">
+            {% endif %}
+            <div class="form-group">
+                <label>Produto/Serviço</label><input type="text" required class="form-control input-medium" name="nome_produto_servico" value="{{ d.nome_produto_servico }}"/>
+            </div>
+            <div class="form-group">
+                 <label>Beneficiário</label><input type="text" required class="form-control input-medium" name="beneficiario" value="{{ d.beneficiario }}"/>
+            </div>
+            <div class="form-group">
+                <label>Categoria</label>
+                <select class="form-control input-small" required name="categoria">
+                    <option></option>
+                    {% for c in categorias %}
+                        <option value="{{ c }}" {% if c == d.categoria %} selected {% endif %} >{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if aba == 'fixa' %}
+                <div class="form-group">
+                     <label>Número de parcelas</label><p class="text-muted"> Use zero para despesas contínuas</p><input required min="0" type="number" class="form-control input-small" name="numero_parcelas" ng-model="numero_parcelas"  ng-init="numero_parcelas = {{ d.numero_parcelas }}"/>
+                </div>
+            {% endif %}
+            <div class="form-group">
+                 <label>Valor da {% if aba == 'fixa'%}parcela{% else %}despesa{% endif %}</label><input type="number" step="any" required min="0" class="form-control input-small" name="valor" ng-model="valor_parcela" ng-init="valor_parcela = {{ d.valor }}"/>
+                 <h5><span ng-show="numero_parcelas" class="label label-info">Valor total: {[{ calcularTotal() | currency:"R$" }]}</span></h5>
+            </div>
+            {% if aba != 'avulsa'  %}
+                <div class="form-group">
+                    <label>Data de Vencimento</label>
+                    <div class="row">
+                        <div class="col-xs-5">
+                            <select class="form-control input-small" required name="dia_vencimento">
+                                <option></option>
+                                {% for dia in range(1, 32) %}
+                                    <option value="{{ dia }}" {% if d and d.data_vencimento[1] == dia %}selected{% endif %}>{{ dia }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-xs-4" style="left: -325px;">
+                            <select class="form-control input-small" required name="mes_vencimento">
+                                <option></option>
+                                {% for m in range(1, 13) %}
+                                    <option value="{{ m }}" {% if d and d.data_vencimento[0] == m %}selected{% endif %}>{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Juros % a.d.</label><p class="text-muted"> Use zero para despesas sem juros</p>
+                    <input required type="number" min="0" step="any" class="form-control input-small" name="juros" value="{{ d.juros }}"/>
+                </div>
+            {% endif %}
+            {% if aba == 'recorrente' and not esconder_salvar_modelo and not editar %}
+                <div class="form-group">
+                    <label>Salvar modelo</label> <input type="checkbox" name="salvar_modelo">
+                    <p class="text-muted"> Marcando esta opção você pode recuperar este modelo de conta para o mês que vem</p>
+                </div>
+            {% endif %}
+            <div class="form-group">
+                {% if editar %}
+                    <button type="submit" class="btn btn-default btn-primary">Salvar edição</button>
+                {% else %}
+                    <button type="submit" class="btn btn-default btn-primary">Enviar</button>
+                    <button type="reset" class="btn btn-default">Limpar</button>
+                {% endif %}
+            </div> 
+        </form>
+    </div>
+<br><br><br>
+{% endblock %}
